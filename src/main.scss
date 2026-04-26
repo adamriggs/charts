@@ -1,0 +1,22 @@
+body {
+	margin: 0;
+	padding: 0;
+}
+
+.content {
+	height: 100vh;
+	width: 100vw;
+}
+
+.debug-output {
+	position: absolute;
+	top: 100px;
+	width: 50%;
+	height: 50%;
+}
+
+// chart stuff
+.chart-editor__preview canvas {
+	max-height: 500px;
+	max-width: 500px;
+}
