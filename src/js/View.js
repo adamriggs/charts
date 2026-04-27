@@ -52,10 +52,6 @@ export class View {
 
 		this.chartButtons[0].click();
 		this.loadSavedCharts();
-
-		if (this.savedCharts.length > -1) {
-			this.setPreviewChart(this.savedCharts[0].id);
-		}
 	}
 
 	initDomElements() {
@@ -134,16 +130,6 @@ export class View {
 		return newChart;
 	}
 
-	getSavedChart(id) {
-		let returnChart = null;
-		this.savedCharts.forEach(chart => {
-			if (chart.id === id) {
-				returnChart = chart;
-			}
-		});
-		return returnChart;
-	}
-
 	loadSavedCharts() {
 		// console.log('loadSavedCharts()');
 		this.savedCharts = JSON.parse(localStorage.getItem('savedCharts')) || [];
@@ -193,30 +179,36 @@ export class View {
 				deleteBtn.addEventListener('click', (event) => {
 					event.preventDefault();
 					event.stopPropagation();
-					this.deleteSavedChart(event);
+					const deleteElem = event.target.closest('.saved-chart');
+					this.deleteSavedChart(deleteElem.dataset.chartId);
 				})
 
 				this.savedChartsElem.appendChild(li);
 			})
 		}
+
+		if (this.savedCharts.length > -1) {
+			this.setPreviewChart(this.savedCharts[0].id);
+		}
 	}
 
-	deleteSavedChart(event) {
+	getSavedChart(id) {
+		let returnChart = null;
+		this.savedCharts.forEach(chart => {
+			if (chart.id === id) {
+				returnChart = chart;
+			}
+		});
+		return returnChart;
+	}
+
+	deleteSavedChart(id) {
 		// console.log('deleteSavedChart()');
-		const deleteElem = event.target.closest('.saved-chart');
-		const deleteId = deleteElem.dataset.chartId;
-		// console.log(deleteId);
+		// console.log(id);
 
 		this.savedCharts.forEach((chart, i) => {
-			let found = -1;
-
-			// console.log('deleteId:', deleteId);
-			// console.log('chart.id:', chart.id);
-			// console.log('*****');
-			if (chart.id === deleteId) { found = i; }
-
-			if (found !== -1) {
-				this.savedCharts.splice(found, 1);
+			if (chart.id === id) {
+				this.savedCharts.splice(i, 1);
 				localStorage.setItem('savedCharts', JSON.stringify(this.savedCharts));
 			}
 		})
@@ -234,10 +226,10 @@ export class View {
 			let spliceNumber = -1;
 			this.savedCharts.forEach((chart, i) => {
 				if (chart.id === this.previewChartData.id) {
-					console.log('saving chart...');
+					// console.log('saving chart...');
 					chart = { ...this.previewChartData };
-					console.log('chart:', chart);
-					console.log('this.previewChartData:', this.previewChartData);
+					// console.log('chart:', chart);
+					// console.log('this.previewChartData:', this.previewChartData);
 
 					spliceNumber = i;
 				}
@@ -296,21 +288,10 @@ export class View {
 			this.previewChartData.type === '' ||
 			this.previewChartData.data.length <=0
 		) {
-			console.log('no chart data');
 			if (this.previewChart) {
-				console.log('no display chart object');
 				this.previewChart.destroy();
 			}
 			
-			console.log(this.previewCanvas);
-
-			if (this.previewCanvas) {
-				console.log('display preview canvas exists');
-				console.log('this.previewCanvas:', this.previewCanvas);
-				// this.previewCanvas.clearRect(0, 0, this.previewCanvas.width, this.previewCanvas.height);
-			}
-			console.log('*****');
-
 			return;
 		}
 
