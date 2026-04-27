@@ -13,7 +13,7 @@
  * - + delete chart option
  * - + CRUID complete
  * - + edit title
- * - - edit labels
+ * - + edit labels
  * - multidimensional data
  * - try catch's around everthing to report errors to the user using dialog boxes
  * + save and list charts - save to local storage for now
@@ -55,22 +55,25 @@ export class View {
 	}
 
 	initDomElements() {
-		this.savedChartsElem = document.querySelector('.chart-list__saved-charts');
-		this.selectChartList = document.querySelector('.chart-editor__select ul');
-		this.dataInput = document.querySelector('.chart-editor__data__input');
-		this.newBtn = document.querySelector('.chart-editor__new');
-		this.saveBtn = document.querySelector('.chart-editor__controls__save');
-		this.previewCanvas = document.querySelector('.chart-editor__preview canvas');
+		this.savedChartsElem = document.querySelector('.chart-plugin__saved-charts');
+		this.selectChartList = document.querySelector('.chart-plugin__editor__type ul');
+		this.dataInput = document.querySelector('.chart-plugin__editor__data__input');
+		this.newBtn = document.querySelector('.chart__new');
+		this.saveBtn = document.querySelector('.chart-plugin__editor__text__save');
 
-		this.titleInput = document.querySelector('.chart-editor__controls__title input');
+		this.previewTitle = document.querySelector('.chart-plugin__preview__title');
+		this.previewCanvas = document.querySelector('.chart-plugin__preview canvas');
+
+		this.titleInput = document.querySelector('.chart-plugin__editor__text__title input');
+		this.labelInputContainer = document.querySelector('.chart-plugin__editor__text__labels ul');
 	}
 
 	initChartTypes() {
 		chartTypes.forEach(chart => {
 			const li = document.createElement('li');
 			const btn = document.createElement('button');
-			btn.classList.add('chart-editor__select');
-			btn.classList.add('chart-editor__select__' + chart);
+			btn.classList.add('chart-plugin__editor__type');
+			btn.classList.add('chart-plugin__editor__type__' + chart);
 			btn.dataset.chartType = chart;
 
 			const div = document.createElement('div');
@@ -87,7 +90,7 @@ export class View {
 	initListeners() {
 		this.chartButtons.forEach(btn => {
 			btn.addEventListener('click', event => {
-				this.setPreviewChartType(event.target.closest('.chart-editor__select').dataset.chartType);
+				this.setPreviewChartType(event.target.closest('.chart-plugin__editor__type').dataset.chartType);
 			});
 		})
 
@@ -118,7 +121,7 @@ export class View {
 		};
 
 		if (this.dataInput) {
-			this.dataInput.textContent = '';
+			this.dataInput.value = '';
 		}
 
 		if (this.chartButtons && this.chartButtons.length >= 0) {
@@ -193,19 +196,16 @@ export class View {
 	}
 
 	getSavedChart(id) {
-		let returnChart = null;
+		let returnChart = {};
 		this.savedCharts.forEach(chart => {
 			if (chart.id === id) {
-				returnChart = chart;
+				returnChart = { ...chart };
 			}
 		});
 		return returnChart;
 	}
 
 	deleteSavedChart(id) {
-		// console.log('deleteSavedChart()');
-		// console.log(id);
-
 		this.savedCharts.forEach((chart, i) => {
 			if (chart.id === id) {
 				this.savedCharts.splice(i, 1);
@@ -213,34 +213,36 @@ export class View {
 			}
 		})
 		this.loadSavedCharts();
-
 	}
 
 	savePreviewChart() {
-		// console.log('savePreviewChart()');
+		console.log('savePreviewChart()');
 		const savedChart = this.getSavedChart(this.previewChartData.id);
-		// console.log('savedChart', savedChart);
+		
 		if (savedChart === null) {
 			this.savedCharts.push(this.previewChartData);
 		} else {
 			let spliceNumber = -1;
 			this.savedCharts.forEach((chart, i) => {
-				if (chart.id === this.previewChartData.id) {
-					// console.log('saving chart...');
-					chart = { ...this.previewChartData };
-					// console.log('chart:', chart);
-					// console.log('this.previewChartData:', this.previewChartData);
+				if (chart.id === this.previewChartData.id) { spliceNumber = i; }
+			});
 
-					spliceNumber = i;
-				}
-			})
+			const newLabels = [];
+			const newLabelInputs = Array.from(this.labelInputContainer.querySelectorAll('li input'));
+			newLabelInputs.forEach(labelInput => {
+				newLabels.push(labelInput.value);
+			});
+
+			// console.log('newLabels:', newLabels);
+			this.previewChartData.labels = [...newLabels];
+			// console.log(this.previewChartData.labels);
 
 			this.savedCharts.splice(spliceNumber, 1);
 			this.savedCharts.push(this.previewChartData);
-		}
 
-		// console.log(this.savedCharts);
-		// console.log('*****');
+			// console.log(this.savedCharts);
+
+		}
 
 		localStorage.setItem('savedCharts', JSON.stringify(this.savedCharts));
 
@@ -248,16 +250,32 @@ export class View {
 	}
 
 	setPreviewChart(id) {
-		// console.log('setPreviewChart()');
-		// console.log(id);
-		// console.log('*****');
-		const previewChartData = this.getSavedChart(id);
-		this.previewChartData = { ...previewChartData };
+		console.log('setPreviewChart()');
+		this.previewChartData = { ...this.getSavedChart(id) };
+		// console.log('this.previewChartData:', this.previewChartData);
 
-		this.dataInput.textContent = previewChartData.data.join(', ');
-		this.setPreviewChartType(previewChartData.type);
+		this.dataInput.value = this.previewChartData.data.join(', ');
+		this.titleInput.value = this.previewChartData.title;
+		this.previewTitle.textContent = this.previewChartData.title;
+		this.setPreviewChartType(this.previewChartData.type);
 
-		this.titleInput.value = previewChartData.title;
+		const labels = this.previewChartData.labels;
+		console.log('data:', this.previewChartData.data);
+		console.log('labels:', labels);
+
+		this.labelInputContainer.textContent = '';
+
+		labels.forEach(label => {
+			const li = document.createElement('li');
+
+			const input = document.createElement('input');
+			input.type = 'text';
+			input.placeholder = label;
+			input.value = label;
+
+			li.appendChild(input);
+			this.labelInputContainer.appendChild(li);
+		});
 	}
 
 	setPreviewChartType(type) {
@@ -304,7 +322,7 @@ export class View {
 				data: {
 					labels: this.previewChartData.labels,
 					datasets: [{
-						// label: '# of Votes',
+						label: 'All Data',
 						data: this.previewChartData.data,
 					}]
 				},
@@ -314,7 +332,6 @@ export class View {
 
 	onDataInputUpdate() {
 		this.previewChartData.data = Array.from(this.dataInput.value.split(',').map(n => parseInt(n.trim(), 10)));
-		this.previewChartData.labels = this.previewChartData.data;
 
 		if (this.previewChartData.type !== '') {
 			this.drawPreviewChart();
@@ -323,5 +340,6 @@ export class View {
 
 	onTitleInputUpdate(event) {
 		this.previewChartData.title = event.target.value;
+		this.previewTitle.textContent = event.target.value;
 	}
 }

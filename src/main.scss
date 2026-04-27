@@ -15,11 +15,41 @@ body {
 	height: 50%;
 }
 
+ul {
+	list-style: none;
+	padding-inline-start: 0;
+}
+
 // chart stuff
 $max-width: 1200px;
 $background-hightlight: lightgray;
 
-.chart-list__saved-charts {
+.chart-plugin__content {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+}
+
+.chart-plugin__preview {
+	align-items: center;
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+	justify-content: center;
+	max-width: 50%;
+
+	canvas {
+		max-height: 500px;
+		max-width: 500px;
+	}
+}
+
+.chart-plugin__preview__title {
+	text-align: center;
+}
+
+.chart-plugin__saved-charts {
+	flex-grow: 1;
 	list-style: none;
 	padding-inline-start: 0;
 
@@ -30,7 +60,7 @@ $background-hightlight: lightgray;
 		cursor: pointer;
 		margin: 0 10px;
 		padding: 10px;
-		width: $max-width;
+		width: 100%;
 
 		&:hover {
 			background-color: $background-hightlight;
@@ -45,19 +75,19 @@ $background-hightlight: lightgray;
 	padding: 10px;
 
 	.inner-button__title {
-		max-width: 200px;
+		max-width: 25%;
 		text-align: left;
-		width: 200px;
+		width: 25%;
 	}
 }
 
-.chart-editor__select ul {
+.chart-plugin__editor__type ul {
 	display: flex;
 	list-style: none;
 	padding-inline-start: 0;
 }
 
-.chart-editor__select button {
+.chart-plugin__editor__type button {
 	background: transparent;
 	border: 1px solid black;
 	cursor: pointer;
@@ -73,13 +103,4 @@ $background-hightlight: lightgray;
 		background-color: $background-hightlight;
 		// border: 1px solid red;
 	}
-}
-
-.chart-editor__preview {
-	display: flex;
-}
-
-.chart-editor__preview canvas {
-	max-height: 500px;
-	max-width: 500px;
 }
