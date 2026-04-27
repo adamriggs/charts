@@ -16,13 +16,33 @@ body {
 }
 
 // chart stuff
+$max-width: 1200px;
+$background-hightlight: lightgray;
+
 .chart-list__saved-charts {
 	list-style: none;
 	padding-inline-start: 0;
 
-	button {
-		margin: 10px 10px;
+	.saved-chart {
+		background-color: transparent;
+		border: 0;
+		border-bottom: 1px solid black;
+		cursor: pointer;
+		margin: 0 10px;
+		padding: 10px;
+		width: $max-width;
+
+		&:hover {
+			background-color: $background-hightlight;
+		}
 	}
+}
+
+.inner-button {
+	display: flex;
+	justify-content: space-between;
+	margin: 10px;
+	padding: 10px;
 }
 
 .chart-editor__select ul {
@@ -36,7 +56,7 @@ body {
 	border: 1px solid black;
 	cursor: pointer;
 	margin: 10px;
-	padding: 20px 40px;
+	// padding: 20px 40px;
 	text-transform: capitalize;
 	
 	&.selected {
@@ -44,7 +64,8 @@ body {
 	}
 
 	&:hover {
-		border: 1px solid red;
+		background-color: $background-hightlight;
+		// border: 1px solid red;
 	}
 }
 
