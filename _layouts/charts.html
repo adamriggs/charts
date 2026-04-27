@@ -6,49 +6,50 @@ layout: charts
 <head>
 	<title>{{ page.title }}</title>
 	<link rel="stylesheet" href="{{ site.baseurl }}/assets/styles.css">
-	<!-- <script src="{{ site.baseurl }}/assets/main.js" defer></script> -->
 	<script src="{{ '/assets/main.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
 
 </head>
 
 <body>
 
-	<!-- This is where your page content goes -->
-	<!-- <div id="content" class="content">
-		{{ content }}
-	</div> -->
-
 	<div class="chart-plugin">
 		<div class="chart-list__container">
 			<div class="chart-list__header">
-				<h2>Chart List</h2>
+				<h2>Saved Charts</h2>
 			</div>
-			<div class="chart-list__body">
-				<div class="chart-list__item">No Charts</div>
-			</div>
-			<div class="chart-list__controls">
+			<ul class="chart-list__saved-charts">
+				<li class="chart-list__item">No Charts</li>
+			</ul>
+			<!-- <div class="chart-list__controls">
 				<button class="chat-list__controls__prev">Prev</button>
 				<button class="chat-list__controls__refresh">Refresh</button>
 				<button class="chat-list__controls__next">Next</button>
-			</div>
+			</div> -->
 		</div>
 
 		<div class="chart-editor__container">
 			<div class="chart-editor__header"">
 				<h2>Chart Editor</h2>
 			</div>
-			<div class="chart-editor__select""></div>
+			<div class="chart-editor__select"">
+				<h4>Select Chart</h4>
+				<ul></ul>
+			</div>
 			<div class="chart-editor__data"">
-				<textarea class="chart-editor__data__input">5, 6, 7</textarea>
+				<h4>Enter Data</h4>
+
+				<textarea class="chart-editor__data__input">8, 6, 7, 5, 3, 0, 9</textarea>
 			</div>
 			<div class="chart-editor__customize""></div>
+
+			<h4>Edit Chart</h4>
 			<div class="chart-editor__preview"">
 				<canvas></canvas>
-				<button class="chart-editor__preview__draw">Draw</button>
-			</div>
-			<div class="chart-editor__controls"">
-				<button class="chart-editor__controls__save">Save</button>
-				<button class="chart-editor__controls__exit">Exit</button>
+				<div class="chart-editor__controls"">
+					<!-- <button class="chart-editor__controls__draw">Draw</button> -->
+					<button class="chart-editor__controls__save">Save</button>
+					<!-- <button class="chart-editor__controls__exit">Exit</button> -->
+				</div>
 			</div>
 		</div>
 	</div>

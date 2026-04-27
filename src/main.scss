@@ -16,6 +16,42 @@ body {
 }
 
 // chart stuff
+.chart-list__saved-charts {
+	list-style: none;
+	padding-inline-start: 0;
+
+	button {
+		margin: 10px 10px;
+	}
+}
+
+.chart-editor__select ul {
+	display: flex;
+	list-style: none;
+	padding-inline-start: 0;
+}
+
+.chart-editor__select button {
+	background: transparent;
+	border: 1px solid black;
+	cursor: pointer;
+	margin: 10px;
+	padding: 20px 40px;
+	text-transform: capitalize;
+	
+	&.selected {
+		border: 1px solid red;
+	}
+
+	&:hover {
+		border: 1px solid red;
+	}
+}
+
+.chart-editor__preview {
+	display: flex;
+}
+
 .chart-editor__preview canvas {
 	max-height: 500px;
 	max-width: 500px;
