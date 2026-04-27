@@ -55,7 +55,7 @@ export class View {
 	}
 
 	initDomElements() {
-		this.savedChartsElem = document.querySelector('.chart-plugin__saved-charts');
+		this.savedChartsElem = document.querySelector('.chart-plugin__saved-charts ul');
 		this.selectChartList = document.querySelector('.chart-plugin__editor__type ul');
 		this.dataInput = document.querySelector('.chart-plugin__editor__data__input');
 		this.newBtn = document.querySelector('.chart__new');

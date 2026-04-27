@@ -15,14 +15,18 @@ body {
 	height: 50%;
 }
 
+// chart stuff
+$max-width: 1200px;
+$background-hightlight: lightgray;
+
 ul {
 	list-style: none;
 	padding-inline-start: 0;
 }
 
-// chart stuff
-$max-width: 1200px;
-$background-hightlight: lightgray;
+button {
+	cursor: pointer;
+}
 
 .chart-plugin__content {
 	display: flex;
@@ -57,7 +61,7 @@ $background-hightlight: lightgray;
 		background-color: transparent;
 		border: 0;
 		border-bottom: 1px solid black;
-		cursor: pointer;
+		// cursor: pointer;
 		margin: 0 10px;
 		padding: 10px;
 		width: 100%;
@@ -66,6 +70,11 @@ $background-hightlight: lightgray;
 			background-color: $background-hightlight;
 		}
 	}
+}
+
+.chart-plugin__saved-charts__header {
+	display: flex;
+	justify-content: space-between;
 }
 
 .inner-button {
@@ -90,7 +99,7 @@ $background-hightlight: lightgray;
 .chart-plugin__editor__type button {
 	background: transparent;
 	border: 1px solid black;
-	cursor: pointer;
+	// cursor: pointer;
 	margin: 10px;
 	// padding: 20px 40px;
 	text-transform: capitalize;
