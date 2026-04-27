@@ -36,8 +36,8 @@ const chartTypes = [
 ];
 
 export class View {
-	displayChartData = this.newChart();
-	displayChartObject;
+	previewChartData = this.newChart();
+	previewChart;
 	savedCharts = [];
 	chartButtons = [];
 
@@ -52,12 +52,16 @@ export class View {
 
 		this.chartButtons[0].click();
 		this.loadSavedCharts();
+
+		if (this.savedCharts.length > -1) {
+			this.setPreviewChart(this.savedCharts[0].id);
+		}
 	}
 
 	initDomElements() {
 		this.savedChartsElem = document.querySelector('.chart-list__saved-charts');
 		this.selectChartList = document.querySelector('.chart-editor__select ul');
-		this.data = document.querySelector('.chart-editor__data__input');
+		this.dataInput = document.querySelector('.chart-editor__data__input');
 		this.newBtn = document.querySelector('.chart-editor__new');
 		this.saveBtn = document.querySelector('.chart-editor__controls__save');
 		this.previewCanvas = document.querySelector('.chart-editor__preview canvas');
@@ -87,39 +91,26 @@ export class View {
 	initListeners() {
 		this.chartButtons.forEach(btn => {
 			btn.addEventListener('click', event => {
-				// console.log(event.target);
-				this.setChartType(event.target.closest('.chart-editor__select').dataset.chartType);
+				this.setPreviewChartType(event.target.closest('.chart-editor__select').dataset.chartType);
 			});
 		})
 
-		this.data.addEventListener('input', event => {
-			this.dataUpdate(event.target.value);
+		this.dataInput.addEventListener('input', event => {
+			this.onDataInputUpdate(event.target.value);
 		});
 
 		this.newBtn.addEventListener('click', () => {
-			this.displayChartData = this.newChart();
-			this.drawChart();
+			this.previewChartData = this.newChart();
+			this.drawPreviewChart();
 		});
 
 		this.saveBtn.addEventListener('click', () => {
-			this.saveChart();
+			this.savePreviewChart();
 		});
 
 		this.titleInput.addEventListener('input', event => {
-			this.displayChartData.title = event.target.value;
-			console.log(this.displayChartData);
+			this.onTitleInputUpdate(event);
 		});
-	}
-
-	setChartType(type) {
-		this.chartButtons.forEach(btn => {
-			btn.classList.remove('selected');
-
-			if (type === btn.dataset.chartType) {
-				btn.classList.add('selected');
-			}
-		})
-		this.selectChart(type);
 	}
 
 	newChart() {
@@ -130,8 +121,8 @@ export class View {
 			id: crypto.randomUUID(),
 		};
 
-		if (this.data) {
-			this.data.textContent = '';
+		if (this.dataInput) {
+			this.dataInput.textContent = '';
 		}
 
 		if (this.chartButtons && this.chartButtons.length >= 0) {
@@ -143,35 +134,14 @@ export class View {
 		return newChart;
 	}
 
-	saveChart() {
-		console.log('saveChart()');
-		const savedChart = this.getSavedChart(this.displayChartData.id);
-		console.log('savedChart', savedChart);
-		if (savedChart === null) {
-			this.savedCharts.push(this.displayChartData);
-		} else {
-			let spliceNumber = -1;
-			this.savedCharts.forEach((chart, i) => {
-				if (chart.id === this.displayChartData.id) {
-					console.log('saving chart...');
-					chart = { ...this.displayChartData };
-					console.log('chart:', chart);
-					console.log('this.displayChartData:', this.displayChartData);
-
-					spliceNumber = i;
-				}
-			})
-
-			this.savedCharts.splice(spliceNumber, 1);
-			this.savedCharts.push(this.displayChartData);
-		}
-
-		console.log(this.savedCharts);
-		console.log('*****');
-		
-		localStorage.setItem('savedCharts', JSON.stringify(this.savedCharts));
-
-		this.loadSavedCharts();
+	getSavedChart(id) {
+		let returnChart = null;
+		this.savedCharts.forEach(chart => {
+			if (chart.id === id) {
+				returnChart = chart;
+			}
+		});
+		return returnChart;
 	}
 
 	loadSavedCharts() {
@@ -217,13 +187,13 @@ export class View {
 				li.appendChild(btn);
 
 				btn.addEventListener('click', (event) => {
-					this.previewChart(event.target.closest('.saved-chart').dataset.chartId);
+					this.setPreviewChart(event.target.closest('.saved-chart').dataset.chartId);
 				});
 
 				deleteBtn.addEventListener('click', (event) => {
 					event.preventDefault();
 					event.stopPropagation();
-					this.deleteChart(event);
+					this.deleteSavedChart(event);
 				})
 
 				this.savedChartsElem.appendChild(li);
@@ -231,31 +201,19 @@ export class View {
 		}
 	}
 
-	previewChart(id) {
-		const displayChartData = this.getSavedChart(id);
-		this.displayChartData = { ...displayChartData };
-
-		this.data.textContent = displayChartData.data.join(', ');
-		this.setChartType(displayChartData.type);
-
-		this.titleInput.value = displayChartData.title;
-	}
-
-	deleteChart(event) {
-		console.log('deleteChart()');
+	deleteSavedChart(event) {
+		// console.log('deleteSavedChart()');
 		const deleteElem = event.target.closest('.saved-chart');
 		const deleteId = deleteElem.dataset.chartId;
-		console.log(deleteId);
+		// console.log(deleteId);
 
 		this.savedCharts.forEach((chart, i) => {
 			let found = -1;
 
-			console.log('deleteId:', deleteId);
-			console.log('chart.id:', chart.id);
-			console.log('*****');
-			if (chart.id === deleteId) {
-				found = i;
-			}
+			// console.log('deleteId:', deleteId);
+			// console.log('chart.id:', chart.id);
+			// console.log('*****');
+			if (chart.id === deleteId) { found = i; }
 
 			if (found !== -1) {
 				this.savedCharts.splice(found, 1);
@@ -266,49 +224,82 @@ export class View {
 
 	}
 
-	getSavedChart(id) {
-		let returnChart = null;
-		this.savedCharts.forEach(chart => {
-			if (chart.id === id) {
-				returnChart = chart;
+	savePreviewChart() {
+		// console.log('savePreviewChart()');
+		const savedChart = this.getSavedChart(this.previewChartData.id);
+		// console.log('savedChart', savedChart);
+		if (savedChart === null) {
+			this.savedCharts.push(this.previewChartData);
+		} else {
+			let spliceNumber = -1;
+			this.savedCharts.forEach((chart, i) => {
+				if (chart.id === this.previewChartData.id) {
+					console.log('saving chart...');
+					chart = { ...this.previewChartData };
+					console.log('chart:', chart);
+					console.log('this.previewChartData:', this.previewChartData);
+
+					spliceNumber = i;
+				}
+			})
+
+			this.savedCharts.splice(spliceNumber, 1);
+			this.savedCharts.push(this.previewChartData);
+		}
+
+		// console.log(this.savedCharts);
+		// console.log('*****');
+
+		localStorage.setItem('savedCharts', JSON.stringify(this.savedCharts));
+
+		this.loadSavedCharts();
+	}
+
+	setPreviewChart(id) {
+		// console.log('setPreviewChart()');
+		// console.log(id);
+		// console.log('*****');
+		const previewChartData = this.getSavedChart(id);
+		this.previewChartData = { ...previewChartData };
+
+		this.dataInput.textContent = previewChartData.data.join(', ');
+		this.setPreviewChartType(previewChartData.type);
+
+		this.titleInput.value = previewChartData.title;
+	}
+
+	setPreviewChartType(type) {
+		this.chartButtons.forEach(btn => {
+			btn.classList.remove('selected');
+
+			if (type === btn.dataset.chartType) {
+				btn.classList.add('selected');
 			}
-		});
-		return returnChart;
-	}
+		})
+		
+		this.previewChartData.type = type;
 
-	selectChart(type) {
-		this.displayChartData.type = type;
-
-		if (this.data.value !== '') {
-			this.dataUpdate();
+		if (this.dataInput.value !== '') {
+			this.onDataInputUpdate();
 		}
 
-		if (this.displayChartData.data !== null || this.displayChartData.data.length !== -1) {
-			this.drawChart();
+		if (this.previewChartData.data !== null || this.previewChartData.data.length !== -1) {
+			this.drawPreviewChart();
 		}
 	}
 
-	dataUpdate() {
-		this.displayChartData.data = Array.from(this.data.value.split(',').map(n => parseInt(n.trim(), 10)));
-		this.displayChartData.labels = this.displayChartData.data;
+	drawPreviewChart() {
+		// console.log('drawPreviewChart()');
 
-		if (this.displayChartData.type !== '') {
-			this.drawChart();
-		}
-	}
-
-	drawChart() {
-		// console.log('drawChart()');
-
-		if (!this.displayChartData || 
-			this.displayChartData.data === null ||
-			this.displayChartData.type === '' ||
-			this.displayChartData.data.length <=0
+		if (!this.previewChartData || 
+			this.previewChartData.data === null ||
+			this.previewChartData.type === '' ||
+			this.previewChartData.data.length <=0
 		) {
 			console.log('no chart data');
-			if (this.displayChartObject) {
+			if (this.previewChart) {
 				console.log('no display chart object');
-				this.displayChartObject.destroy();
+				this.previewChart.destroy();
 			}
 			
 			console.log(this.previewCanvas);
@@ -323,20 +314,33 @@ export class View {
 			return;
 		}
 
-		if (this.displayChartObject) { this.displayChartObject.destroy(); }
+		if (this.previewChart) { this.previewChart.destroy(); }
 
-		this.displayChartObject = new Chart(
+		this.previewChart = new Chart(
 			this.previewCanvas,
 			{
-				type: this.displayChartData.type,
+				type: this.previewChartData.type,
 				data: {
-					labels: this.displayChartData.labels,
+					labels: this.previewChartData.labels,
 					datasets: [{
 						// label: '# of Votes',
-						data: this.displayChartData.data,
+						data: this.previewChartData.data,
 					}]
 				},
 			});
 
+	}
+
+	onDataInputUpdate() {
+		this.previewChartData.data = Array.from(this.dataInput.value.split(',').map(n => parseInt(n.trim(), 10)));
+		this.previewChartData.labels = this.previewChartData.data;
+
+		if (this.previewChartData.type !== '') {
+			this.drawPreviewChart();
+		}
+	}
+
+	onTitleInputUpdate(event) {
+		this.previewChartData.title = event.target.value;
 	}
 }
