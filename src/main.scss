@@ -43,6 +43,12 @@ $background-hightlight: lightgray;
 	justify-content: space-between;
 	margin: 10px;
 	padding: 10px;
+
+	.inner-button__title {
+		max-width: 200px;
+		text-align: left;
+		width: 200px;
+	}
 }
 
 .chart-editor__select ul {

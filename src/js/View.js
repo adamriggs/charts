@@ -9,17 +9,14 @@
  * I need more UI elements to add code to before I can get farther with the code
  * just concentrate on the cart creation first
  * - better UI and flow
- * - - better buttons
- * - - slide show of steps 
  * - + new chart button
- * - - delete chart option
- * - - CRUID complete
- * - - edit labels and add title
- * - - improve the chart list too
- * - edit chart labels
+ * - + delete chart option
+ * - + CRUID complete
+ * - + edit title
+ * - - edit labels
  * - multidimensional data
  * - try catch's around everthing to report errors to the user using dialog boxes
- * - save and list charts - save to local storage for now
+ * + save and list charts - save to local storage for now
  * - export as png/jpg
  * - work with saved datasets - load & manage data from an external file
  * - pull data from a live feed
@@ -63,8 +60,9 @@ export class View {
 		this.data = document.querySelector('.chart-editor__data__input');
 		this.newBtn = document.querySelector('.chart-editor__new');
 		this.saveBtn = document.querySelector('.chart-editor__controls__save');
-		this.exitBtn = document.querySelector('.chart-editor__controls__exit');
 		this.previewCanvas = document.querySelector('.chart-editor__preview canvas');
+
+		this.titleInput = document.querySelector('.chart-editor__controls__title input');
 	}
 
 	initChartTypes() {
@@ -86,6 +84,33 @@ export class View {
 		});
 	}
 
+	initListeners() {
+		this.chartButtons.forEach(btn => {
+			btn.addEventListener('click', event => {
+				// console.log(event.target);
+				this.setChartType(event.target.closest('.chart-editor__select').dataset.chartType);
+			});
+		})
+
+		this.data.addEventListener('input', event => {
+			this.dataUpdate(event.target.value);
+		});
+
+		this.newBtn.addEventListener('click', () => {
+			this.displayChartData = this.newChart();
+			this.drawChart();
+		});
+
+		this.saveBtn.addEventListener('click', () => {
+			this.saveChart();
+		});
+
+		this.titleInput.addEventListener('input', event => {
+			this.displayChartData.title = event.target.value;
+			console.log(this.displayChartData);
+		});
+	}
+
 	setChartType(type) {
 		this.chartButtons.forEach(btn => {
 			btn.classList.remove('selected');
@@ -95,30 +120,6 @@ export class View {
 			}
 		})
 		this.selectChart(type);
-	}
-
-	initListeners() {
-		this.chartButtons.forEach(btn => {
-			btn.addEventListener('click', (event) => {
-				console.log(event.target);
-				this.setChartType(event.target.closest('.chart-editor__select').dataset.chartType);
-			});
-		})
-
-		this.data.addEventListener('input', (event) => {
-			this.dataUpdate(event.target.value);
-		});
-
-		this.newBtn.addEventListener('click', (() => {
-			this.displayChartData = this.newChart();
-			// console.log('this.displayChartData:', this.displayChartData);
-
-			this.drawChart();
-		}));
-
-		this.saveBtn.addEventListener('click', (() => {
-			this.saveChart();
-		}));
 	}
 
 	newChart() {
@@ -143,16 +144,30 @@ export class View {
 	}
 
 	saveChart() {
+		console.log('saveChart()');
 		const savedChart = this.getSavedChart(this.displayChartData.id);
+		console.log('savedChart', savedChart);
 		if (savedChart === null) {
 			this.savedCharts.push(this.displayChartData);
 		} else {
-			this.savedCharts.forEach(chart => {
+			let spliceNumber = -1;
+			this.savedCharts.forEach((chart, i) => {
 				if (chart.id === this.displayChartData.id) {
-					chart = this.displayChartData;
+					console.log('saving chart...');
+					chart = { ...this.displayChartData };
+					console.log('chart:', chart);
+					console.log('this.displayChartData:', this.displayChartData);
+
+					spliceNumber = i;
 				}
 			})
+
+			this.savedCharts.splice(spliceNumber, 1);
+			this.savedCharts.push(this.displayChartData);
 		}
+
+		console.log(this.savedCharts);
+		console.log('*****');
 		
 		localStorage.setItem('savedCharts', JSON.stringify(this.savedCharts));
 
@@ -160,7 +175,7 @@ export class View {
 	}
 
 	loadSavedCharts() {
-		console.log('loadSavedCharts()');
+		// console.log('loadSavedCharts()');
 		this.savedCharts = JSON.parse(localStorage.getItem('savedCharts')) || [];
 
 		if (this.savedCharts.length > -1) {
@@ -178,23 +193,31 @@ export class View {
 
 				const title = document.createElement('span');
 				title.classList.add('inner-button__title');
-				title.textContent = chart.type;
+				title.textContent = chart.title;
+
+				const type = document.createElement('span');
+				type.classList.add('inner-button__type');
+				type.textContent = chart.type;
 
 				const preview = document.createElement('span');
 				preview.classList.add('inner-button__preview');
+
+				// render chart here
+				// const canvas = document.createElement('canvas');
 
 				const deleteBtn = document.createElement('button');
 				deleteBtn.classList.add('inner-button__delete');
 				deleteBtn.textContent = 'Delete';
 
 				div.appendChild(title);
+				div.appendChild(type);
 				div.appendChild(preview);
 				div.appendChild(deleteBtn);
 				btn.appendChild(div);
 				li.appendChild(btn);
 
 				btn.addEventListener('click', (event) => {
-					this.loadChart(event.target.closest('.saved-chart').dataset.chartId);
+					this.previewChart(event.target.closest('.saved-chart').dataset.chartId);
 				});
 
 				deleteBtn.addEventListener('click', (event) => {
@@ -208,13 +231,14 @@ export class View {
 		}
 	}
 
-	loadChart(id) {
+	previewChart(id) {
 		const displayChartData = this.getSavedChart(id);
-		// console.log(displayChartData);
-		this.displayChartData = displayChartData;
+		this.displayChartData = { ...displayChartData };
 
 		this.data.textContent = displayChartData.data.join(', ');
 		this.setChartType(displayChartData.type);
+
+		this.titleInput.value = displayChartData.title;
 	}
 
 	deleteChart(event) {
@@ -301,10 +325,6 @@ export class View {
 
 		if (this.displayChartObject) { this.displayChartObject.destroy(); }
 
-		console.log('this.displayChartData:', this.displayChartData);
-		console.log(this.previewCanvas);
-		console.log('*****');
-
 		this.displayChartObject = new Chart(
 			this.previewCanvas,
 			{
@@ -314,16 +334,8 @@ export class View {
 					datasets: [{
 						// label: '# of Votes',
 						data: this.displayChartData.data,
-						// borderWidth: 1
 					}]
 				},
-				// options: {
-				// 	scales: {
-				// 		y: {
-				// 			beginAtZero: true
-				// 		}
-				// 	}
-				// }
 			});
 
 	}
