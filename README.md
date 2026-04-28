@@ -3,8 +3,8 @@
 ## chart generation app
 
 TODO
- * better UI and flow
- * - preview on right, list of charts and editor on the left
+ * ✅better UI and flow
+ * - ✅preview on right, list of charts and editor on the left
  * ✅edit chart labels
  * multidimensional data
  * separate into mvc

@@ -15,53 +15,66 @@ layout: charts
 	<div class="chart-plugin">
 		<div class="chart-plugin__container">
 			<div class="chart-plugin__content">
+
 				<div class="chart-plugin__saved-charts">
 					<div class="chart-plugin__saved-charts__header">
 						<h2>Saved Charts</h2><button class="chart__new">New Chart</button>
 					</div>
 					<ul class="chart-plugin__saved-charts"></ul>
 				</div>
+
+
+
+<div class="chart-plugin__editor closed">
+	<div class="chart-plugin__editor__header">
+		<h2>Chart Editor</h2>
+		<div class="chart-plugin__editor__controls">
+			<button class="chart-plugin__editor__controls--save">Save</button>
+			<button class="chart-plugin__editor__controls--close">X</button>
+		</div>
+	</div>
+	<div class="chart-plugin__editor__type">
+		<h4>Type</h4>
+		<ul></ul>
+	</div>
+	<div class="chart-plugin__editor__data">
+		<h4>Data</h4>
+		<textarea class="chart-plugin__editor__data__input">8, 6, 7, 5, 3, 0, 9</textarea>
+	</div>
+
+	<div class="chart-plugin__editor__text">
+
+		<h4>Text</h4>
+		<div class=" chart-plugin__editor__text__title">
+			<span>Title: </span>
+			<input type="text" value="New Chart">
+		</div>
+
+		<span>Labels: </span>
+		<div class="chart-plugin__editor__text__labels">
+			<ul>
+				<li>
+					<input type="text" value="label">
+				</li>
+			</ul>
+		</div>
+
+	</div>
+</div>
+
+
 				<div class="chart-plugin__preview"">
-					<h2 class="chart-plugin__preview__title">Title</h2>
+					<div>
+						<h2 class="chart-plugin__preview__title">Title</h2>
+						<button class="chart-plugin__editor__controls--open">Edit</button>
+					</div>
 					<canvas></canvas>
 				</div>	
+
 			</div>
 		</div>
 
-		<div class="chart-plugin__editor">
-			<div class="chart-plugin__editor__header">
-				<h2>Chart Editor</h2>
-			</div>
-			<div class="chart-plugin__editor__type">
-				<h4>Type</h4>
-				<ul></ul>
-			</div>
-			<div class="chart-plugin__editor__data">
-				<h4>Data</h4>
-
-				<textarea class="chart-plugin__editor__data__input">8, 6, 7, 5, 3, 0, 9</textarea>
-			</div>
-
-			<div class="chart-plugin__editor__text">
-
-				<h4>Text</h4>
-				<div class=" chart-plugin__editor__text__title">
-					<span>Title: </span>
-					<input type="text" value="New Chart">
-				</div>
-			
-				<span>Labels: </span>
-				<div class="chart-plugin__editor__text__labels">
-					<ul>
-						<li>
-							<input type="text" value="label">
-						</li>
-					</ul>
-				</div>
-			
-				<button class="chart-plugin__editor__text__save">Save</button>
-			</div>
-		</div>
+		
 	</div>
 	
 

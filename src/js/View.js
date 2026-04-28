@@ -58,8 +58,11 @@ export class View {
 		this.savedChartsElem = document.querySelector('.chart-plugin__saved-charts ul');
 		this.selectChartList = document.querySelector('.chart-plugin__editor__type ul');
 		this.dataInput = document.querySelector('.chart-plugin__editor__data__input');
+		this.editor = document.querySelector('.chart-plugin__editor');
 		this.newBtn = document.querySelector('.chart__new');
-		this.saveBtn = document.querySelector('.chart-plugin__editor__text__save');
+		this.saveBtn = document.querySelector('.chart-plugin__editor__controls--save');
+		this.closeBtn = document.querySelector('.chart-plugin__editor__controls--close');
+		this.openBtn = document.querySelector('.chart-plugin__editor__controls--open');
 
 		this.previewTitle = document.querySelector('.chart-plugin__preview__title');
 		this.previewCanvas = document.querySelector('.chart-plugin__preview canvas');
@@ -107,6 +110,14 @@ export class View {
 			this.savePreviewChart();
 		});
 
+		this.closeBtn.addEventListener('click', () => {
+			this.onToggleEditor();
+		});
+
+		this.openBtn.addEventListener('click', () => {
+			this.onToggleEditor();
+		});
+
 		this.titleInput.addEventListener('input', event => {
 			this.onTitleInputUpdate(event);
 		});
@@ -118,19 +129,22 @@ export class View {
 			data: [],
 			labels: [],
 			id: crypto.randomUUID(),
+			title: 'New Chart'
 		};
 
-		if (this.dataInput) {
+		if (this.editor) {
 			this.dataInput.value = '';
-		}
+			this.editor.classList.remove('closed');
 
-		if (this.chartButtons && this.chartButtons.length >= 0) {
 			this.chartButtons.forEach(btn => {
 				btn.classList.remove('selected');
 			})
+
+			this.titleInput.value = newChart.title;
+			this.previewTitle.textContent = newChart.title;
 		}
 
-		return newChart;
+		return { ...newChart };
 	}
 
 	loadSavedCharts() {
@@ -220,7 +234,7 @@ export class View {
 		const savedChart = this.getSavedChart(this.previewChartData.id);
 		
 		if (savedChart === null) {
-			this.savedCharts.push(this.previewChartData);
+			this.savedCharts.unshift(this.previewChartData);
 		} else {
 			let spliceNumber = -1;
 			this.savedCharts.forEach((chart, i) => {
@@ -238,7 +252,7 @@ export class View {
 			// console.log(this.previewChartData.labels);
 
 			this.savedCharts.splice(spliceNumber, 1);
-			this.savedCharts.push(this.previewChartData);
+			this.savedCharts.unshift(this.previewChartData);
 
 			// console.log(this.savedCharts);
 
@@ -247,6 +261,7 @@ export class View {
 		localStorage.setItem('savedCharts', JSON.stringify(this.savedCharts));
 
 		this.loadSavedCharts();
+		this.onToggleEditor();
 	}
 
 	setPreviewChart(id) {
@@ -341,5 +356,9 @@ export class View {
 	onTitleInputUpdate(event) {
 		this.previewChartData.title = event.target.value;
 		this.previewTitle.textContent = event.target.value;
+	}
+
+	onToggleEditor() {
+		this.editor.classList.toggle('closed');
 	}
 }
