@@ -260,8 +260,6 @@ export class View {
 			newLabels.push(labelInput.value);
 		});
 		this.previewChartData.labels = [...newLabels];
-		// console.log('newLabels:', newLabels);
-		// console.log(this.previewChartData.labels);
 
 		// put the new/updated chart at the front of the array, save the array and reload, and close the editor
 		this.savedCharts.unshift(this.previewChartData);
@@ -286,10 +284,8 @@ export class View {
 
 		data.forEach((data, i) => {
 			if (labels[i]) {
-				console.log(labels[i]);
 				this.labelInputContainer.appendChild(this.createLabel(labels[i], labels[i]));
 			} else {
-				console.log('no label');
 				this.labelInputContainer.appendChild(this.createLabel('No Label', data));
 				this.previewChartData.labels.push(data);
 			}
@@ -355,8 +351,7 @@ export class View {
 	}
 
 	drawPreviewChart() {
-		// console.log('drawPreviewChart()');
-
+		console.log('drawPreviewChart()');
 		if (!this.previewChartData || 
 			this.previewChartData.data === null ||
 			this.previewChartData.type === '' ||
@@ -382,12 +377,17 @@ export class View {
 						data: this.previewChartData.data,
 					}]
 				},
-			});
+			}
+		);
 
+		// console.log(this.previewChart);
+		// console.log(this.previewChartData.data);
 	}
 
 	onDataInputUpdate() {
 		this.previewChartData.data = Array.from(this.dataInput.value.split(',').map(n => parseInt(n.trim(), 10)));
+		// this.previewChartData.data = JSON.parse(this.dataInput.value);
+		// this.previewChartData.data = this.dataInput.value;
 
 		if (this.previewChartData.type !== '') {
 			this.drawPreviewChart();
