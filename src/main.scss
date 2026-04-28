@@ -19,13 +19,70 @@ body {
 $max-width: 1200px;
 $background-hightlight: lightgray;
 
+body {
+	font-family: "Geneva", Tahoma, sans-serif;
+}
+
+button {
+	display: inline-block;
+	padding: 2px 10px;
+	background: #fff;
+	border: 1px solid #000;
+	border-radius: 4px;
+	/* System 7 had slightly rounded corners */
+	font-family: "Geneva", Tahoma, sans-serif;
+	/* System 7's system font */
+	font-size: 12px;
+	cursor: pointer;
+	outline: none;
+	margin-right: 10px;
+
+	&.active {
+		background-color: #000;
+		color: #fff;
+	}
+
+	&.disabled {
+		color: #888;
+		/* Greyed out text */
+		cursor: default;
+	}
+
+	&:hover {
+		background-color: $background-hightlight;
+	}
+}
+
+.button-thick {
+	box-shadow: 0 0 0 2px #000;
+	/* Simulates the double-border look */
+	margin: 2px;
+	/* Accommodates the extra shadow width */
+}
+
 ul {
 	list-style: none;
+	margin: 0;
 	padding-inline-start: 0;
+}
+
+.flex__row {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+
+	div {
+		display: flex;
+		flex-direction: column;
+	}
 }
 
 button {
 	cursor: pointer;
+}
+
+.chart-plugin {
+	margin: 10px;
 }
 
 .chart-plugin__content {
@@ -76,6 +133,7 @@ button {
 }
 
 .chart-plugin__saved-charts__header {
+	align-items: center;
 	display: flex;
 	justify-content: space-between;
 }
@@ -83,8 +141,6 @@ button {
 .inner-button {
 	display: flex;
 	justify-content: space-between;
-	margin: 10px;
-	padding: 10px;
 
 	.inner-button__title {
 		max-width: 25%;
@@ -96,11 +152,14 @@ button {
 .chart-plugin__editor {
 	position: absolute;
 	background: white;
-	// right: 0;
+	left: 0;
+	opacity: 1;
+	transition: all .33s;
 	width: 50%;
 
 	&.closed {
-		right: 0;
+		left: 50%;
+		opacity: 0;
 	}
 }
 
@@ -115,21 +174,15 @@ button {
 	padding-inline-start: 0;
 }
 
-.chart-plugin__editor__type button {
-	background: transparent;
-	border: 1px solid black;
-	margin: 10px;
-	text-transform: capitalize;
+.chart-plugin__editor__data {
+	width: 65%;
+}
 
-	.inner-button {
-		padding: 0;
-	}
-	
-	&.selected {
-		border: 1px solid red;
-	}
+.chart-plugin__editor__text__labels {
+	input {margin-right: 10px;}
+}
 
-	&:hover {
-		background-color: $background-hightlight;
-	}
+.chart-plugin__editor__data__input {
+	height: 100%;
+	width: 100%;
 }

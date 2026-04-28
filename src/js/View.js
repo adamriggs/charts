@@ -8,13 +8,16 @@
 /**
  * I need more UI elements to add code to before I can get farther with the code
  * just concentrate on the cart creation first
- * - better UI and flow
+ * + better UI and flow
  * - + new chart button
  * - + delete chart option
  * - + CRUID complete
  * - + edit title
  * - + edit labels
+ * - + New/Save chart is broken 
+ * - + edit panel slide out
  * - multidimensional data
+ * - + labels autogenerate based on data
  * - try catch's around everthing to report errors to the user using dialog boxes
  * + save and list charts - save to local storage for now
  * - export as png/jpg
@@ -39,6 +42,7 @@ export class View {
 	previewChartData = this.newChart();
 	previewChart;
 	savedCharts = [];
+	savedDataName = 'savedCharts';
 	chartButtons = [];
 
 	constructor() {
@@ -102,7 +106,11 @@ export class View {
 		});
 
 		this.newBtn.addEventListener('click', () => {
-			this.previewChartData = this.newChart();
+			console.log('savedCharts:', this.savedCharts);
+			console.log('previewChartData:', this.previewChartData);
+			this.previewChartData = { ...this.newChart() };
+			console.log('previewChartData:', this.previewChartData);
+			console.log('*****');
 			this.drawPreviewChart();
 		});
 
@@ -124,6 +132,7 @@ export class View {
 	}
 
 	newChart() {
+		// console.log('newChart()');
 		const newChart = {
 			type: '',
 			data: [],
@@ -137,7 +146,7 @@ export class View {
 			this.editor.classList.remove('closed');
 
 			this.chartButtons.forEach(btn => {
-				btn.classList.remove('selected');
+				btn.classList.remove('active');
 			})
 
 			this.titleInput.value = newChart.title;
@@ -147,9 +156,13 @@ export class View {
 		return { ...newChart };
 	}
 
+	saveData(name, data) {
+		localStorage.setItem(name, data);
+	}
+
 	loadSavedCharts() {
 		// console.log('loadSavedCharts()');
-		this.savedCharts = JSON.parse(localStorage.getItem('savedCharts')) || [];
+		this.savedCharts = JSON.parse(localStorage.getItem(this.savedDataName)) || [];
 
 		if (this.savedCharts.length > -1) {
 			this.savedChartsElem.textContent = '';
@@ -223,51 +236,43 @@ export class View {
 		this.savedCharts.forEach((chart, i) => {
 			if (chart.id === id) {
 				this.savedCharts.splice(i, 1);
-				localStorage.setItem('savedCharts', JSON.stringify(this.savedCharts));
+				this.saveData(this.savedDataName, JSON.stringify(this.savedCharts));
 			}
 		})
 		this.loadSavedCharts();
 	}
 
 	savePreviewChart() {
-		console.log('savePreviewChart()');
-		const savedChart = this.getSavedChart(this.previewChartData.id);
-		
-		if (savedChart === null) {
-			this.savedCharts.unshift(this.previewChartData);
-		} else {
-			let spliceNumber = -1;
-			this.savedCharts.forEach((chart, i) => {
-				if (chart.id === this.previewChartData.id) { spliceNumber = i; }
-			});
+		// remove chart from saved charts array if it exists
+		this.savedCharts.forEach((chart, i) => {
+			if (chart.id === this.previewChartData.id) {
+				console.log('chart in array - splicing is going to occur');
+				this.savedCharts.splice(i, 1);
+			} else {
+				console.log('chart not yet saved - no array splicing');
+			}
+		});
 
-			const newLabels = [];
-			const newLabelInputs = Array.from(this.labelInputContainer.querySelectorAll('li input'));
-			newLabelInputs.forEach(labelInput => {
-				newLabels.push(labelInput.value);
-			});
+		// handle labels
+		const newLabels = [];
+		const newLabelInputs = Array.from(this.labelInputContainer.querySelectorAll('li input'));
+		newLabelInputs.forEach(labelInput => {
+			newLabels.push(labelInput.value);
+		});
+		this.previewChartData.labels = [...newLabels];
+		// console.log('newLabels:', newLabels);
+		// console.log(this.previewChartData.labels);
 
-			// console.log('newLabels:', newLabels);
-			this.previewChartData.labels = [...newLabels];
-			// console.log(this.previewChartData.labels);
-
-			this.savedCharts.splice(spliceNumber, 1);
-			this.savedCharts.unshift(this.previewChartData);
-
-			// console.log(this.savedCharts);
-
-		}
-
-		localStorage.setItem('savedCharts', JSON.stringify(this.savedCharts));
-
+		// put the new/updated chart at the front of the array, save the array and reload, and close the editor
+		this.savedCharts.unshift(this.previewChartData);
+		this.saveData(this.savedDataName, JSON.stringify(this.savedCharts));
 		this.loadSavedCharts();
-		this.onToggleEditor();
+		// this.onToggleEditor();
 	}
 
 	setPreviewChart(id) {
-		console.log('setPreviewChart()');
+		// console.log('setPreviewChart()');
 		this.previewChartData = { ...this.getSavedChart(id) };
-		// console.log('this.previewChartData:', this.previewChartData);
 
 		this.dataInput.value = this.previewChartData.data.join(', ');
 		this.titleInput.value = this.previewChartData.title;
@@ -275,30 +280,66 @@ export class View {
 		this.setPreviewChartType(this.previewChartData.type);
 
 		const labels = this.previewChartData.labels;
-		console.log('data:', this.previewChartData.data);
-		console.log('labels:', labels);
+		const data = this.previewChartData.data;
 
-		this.labelInputContainer.textContent = '';
+		this.labelInputContainer.textContent = '';	// clear previous labels
 
-		labels.forEach(label => {
-			const li = document.createElement('li');
-
-			const input = document.createElement('input');
-			input.type = 'text';
-			input.placeholder = label;
-			input.value = label;
-
-			li.appendChild(input);
-			this.labelInputContainer.appendChild(li);
+		data.forEach((data, i) => {
+			if (labels[i]) {
+				console.log(labels[i]);
+				this.labelInputContainer.appendChild(this.createLabel(labels[i], labels[i]));
+			} else {
+				console.log('no label');
+				this.labelInputContainer.appendChild(this.createLabel('No Label', data));
+				this.previewChartData.labels.push(data);
+			}
 		});
+	}
+
+	createLabel(placeholder, value) {
+		const li = document.createElement('li');
+
+		const input = document.createElement('input');
+		input.type = 'text';
+		input.placeholder = placeholder;
+		input.value = value;
+
+		const addBtn = document.createElement('button');
+		addBtn.textContent = '+';
+		addBtn.classList.add('chart-plugin__editor--add-label');
+		addBtn.addEventListener('click', (event) => { this.addLabel(event); });
+
+		const removeBtn = document.createElement('button');
+		removeBtn.textContent = '-';
+		removeBtn.classList.add('chart-plugin__editor--remove-label');
+		removeBtn.addEventListener('click', (event) => { this.removeLabel(event); });
+
+		li.appendChild(input);
+		li.appendChild(addBtn);
+		li.appendChild(removeBtn);
+
+		return li
+	}
+
+	addLabel(event) {
+		const parentElem = event.target.closest('li');
+		parentElem.after(this.createLabel('New Label', ''));
+	}
+
+	removeLabel(event) {
+		console.log('remove label');
+		console.log(event.target);
+
+		const parentElem = event.target.closest('li');
+		parentElem.remove();
 	}
 
 	setPreviewChartType(type) {
 		this.chartButtons.forEach(btn => {
-			btn.classList.remove('selected');
+			btn.classList.remove('active');
 
 			if (type === btn.dataset.chartType) {
-				btn.classList.add('selected');
+				btn.classList.add('active');
 			}
 		})
 		
