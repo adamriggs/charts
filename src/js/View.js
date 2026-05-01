@@ -386,14 +386,22 @@ export class View {
 		// console.log('set up labels');
 		const labels = [...this.previewChartData.labels];
 		this.labelInputContainer.textContent = '';	// clear previous labels
-		this.previewChartData.data.forEach((data, i) => {
-			if (labels[i]) {
-				this.labelInputContainer.appendChild(this.createLabel(labels[i], labels[i]));
-			} else {
+		if (this.previewChartData.data.length > this.previewChartData.labels.length) {
+			// console.log('greater than');
+			this.previewChartData.data.forEach((data, i) => {
+				if (labels[i]) {
+					this.labelInputContainer.appendChild(this.createLabel(labels[i], labels[i]));
+				} else {
+					this.labelInputContainer.appendChild(this.createLabel('No Label', data));
+					this.previewChartData.labels.push(data);
+				}
+			});
+		} else {
+			// console.log('else');
+			this.previewChartData.labels.forEach((data, i) => {
 				this.labelInputContainer.appendChild(this.createLabel('No Label', data));
-				this.previewChartData.labels.push(data);
-			}
-		});
+			});
+		}
 
 		// console.log('after data and label processing');
 		// console.log('this.previewChartData.data:', this.previewChartData.data);
