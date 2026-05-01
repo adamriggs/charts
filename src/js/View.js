@@ -157,7 +157,8 @@ export class View {
 	}
 
 	saveData(name, data) {
-		localStorage.setItem(name, data);
+		const json = JSON.stringify(data);
+		localStorage.setItem(name, json);
 	}
 
 	loadSavedCharts() {
@@ -236,13 +237,14 @@ export class View {
 		this.savedCharts.forEach((chart, i) => {
 			if (chart.id === id) {
 				this.savedCharts.splice(i, 1);
-				this.saveData(this.savedDataName, JSON.stringify(this.savedCharts));
+				this.saveData(this.savedDataName, this.savedCharts);
 			}
 		})
 		this.loadSavedCharts();
 	}
 
 	savePreviewChart() {
+		console.log('savePreviewChart()');
 		// remove chart from saved charts array if it exists
 		this.savedCharts.forEach((chart, i) => {
 			if (chart.id === this.previewChartData.id) {
@@ -263,7 +265,7 @@ export class View {
 
 		// put the new/updated chart at the front of the array, save the array and reload, and close the editor
 		this.savedCharts.unshift(this.previewChartData);
-		this.saveData(this.savedDataName, JSON.stringify(this.savedCharts));
+		this.saveData(this.savedDataName, this.savedCharts);
 		this.loadSavedCharts();
 		// this.onToggleEditor();
 	}
@@ -272,24 +274,13 @@ export class View {
 		// console.log('setPreviewChart()');
 		this.previewChartData = { ...this.getSavedChart(id) };
 
-		this.dataInput.value = this.previewChartData.data.join(', ');
+		this.dataInput.value = JSON.stringify(this.previewChartData.data);
 		this.titleInput.value = this.previewChartData.title;
 		this.previewTitle.textContent = this.previewChartData.title;
 		this.setPreviewChartType(this.previewChartData.type);
 
 		const labels = this.previewChartData.labels;
 		const data = this.previewChartData.data;
-
-		this.labelInputContainer.textContent = '';	// clear previous labels
-
-		data.forEach((data, i) => {
-			if (labels[i]) {
-				this.labelInputContainer.appendChild(this.createLabel(labels[i], labels[i]));
-			} else {
-				this.labelInputContainer.appendChild(this.createLabel('No Label', data));
-				this.previewChartData.labels.push(data);
-			}
-		});
 	}
 
 	createLabel(placeholder, value) {
@@ -331,6 +322,7 @@ export class View {
 	}
 
 	setPreviewChartType(type) {
+		// console.log('setPreviewChartType()');
 		this.chartButtons.forEach(btn => {
 			btn.classList.remove('active');
 
@@ -341,31 +333,73 @@ export class View {
 		
 		this.previewChartData.type = type;
 
-		if (this.dataInput.value !== '') {
-			this.onDataInputUpdate();
-		}
-
 		if (this.previewChartData.data !== null || this.previewChartData.data.length !== -1) {
 			this.drawPreviewChart();
 		}
 	}
 
+	isParsableObject(str) {
+		try {
+			const result = JSON.parse(str);
+			// Ensure result is an object or array, and not null (which is also 'object')
+			return (typeof result === 'object' && result !== null);
+		} catch (e) {
+			return false;
+		}
+	}
+
 	drawPreviewChart() {
-		console.log('drawPreviewChart()');
-		if (!this.previewChartData || 
-			this.previewChartData.data === null ||
-			this.previewChartData.type === '' ||
-			this.previewChartData.data.length <=0
-		) {
-			if (this.previewChart) {
-				this.previewChart.destroy();
+		// console.log('*****');
+		// console.log('drawPreviewChart()');
+
+		// console.log('destroy previous chart');
+		if (this.previewChart) { this.previewChart.destroy(); }
+		if (!this.previewChartData) { return; }
+
+		// console.log('parse chart data field');
+		// console.log('this.previewChartData.data:', this.previewChartData.data);
+		// console.log('is parsable:', this.isParsableObject(this.previewChartData.data));
+		if (typeof this.previewChartData.data === 'string') {
+			// console.log('string');
+			if (this.isParsableObject(this.previewChartData.data)) {
+				// console.log('if');
+				this.previewChartData.data = JSON.parse(this.previewChartData.data);
+			} else {
+				// console.log('else');
+				const objectArray = new Function('return ' + this.previewChartData.data)();
+				// console.log(objectArray);
+				// console.log(typeof objectArray);
+
+				if (typeof objectArray === 'object') {
+					this.previewChartData.data = objectArray;
+				} else {
+					this.previewChartData.data = Array.from(this.previewChartData.data.split(',').map(n => parseInt(n.trim(), 10)));
+				}
+				
+				// this.previewChartData.data = JSON.parse(this.previewChartData.data);
+				// this.previewChartData.data = objectArray;
 			}
-			
-			return;
+		} else {
+			// console.log('not string');
 		}
 
-		if (this.previewChart) { this.previewChart.destroy(); }
+		// console.log('set up labels');
+		const labels = [...this.previewChartData.labels];
+		this.labelInputContainer.textContent = '';	// clear previous labels
+		this.previewChartData.data.forEach((data, i) => {
+			if (labels[i]) {
+				this.labelInputContainer.appendChild(this.createLabel(labels[i], labels[i]));
+			} else {
+				this.labelInputContainer.appendChild(this.createLabel('No Label', data));
+				this.previewChartData.labels.push(data);
+			}
+		});
 
+		// console.log('after data and label processing');
+		// console.log('this.previewChartData.data:', this.previewChartData.data);
+		// console.log('this.previewChartData.labels:', this.previewChartData.labels);
+
+		// console.log('draw the chart');
 		this.previewChart = new Chart(
 			this.previewCanvas,
 			{
@@ -378,16 +412,15 @@ export class View {
 					}]
 				},
 			}
-		);
-
-		// console.log(this.previewChart);
-		// console.log(this.previewChartData.data);
+		)
+		// console.log('*****');
 	}
 
 	onDataInputUpdate() {
-		this.previewChartData.data = Array.from(this.dataInput.value.split(',').map(n => parseInt(n.trim(), 10)));
+		console.log('onDataInputUpdate()');
+		// this.previewChartData.data = Array.from(this.dataInput.value.split(',').map(n => parseInt(n.trim(), 10)));
 		// this.previewChartData.data = JSON.parse(this.dataInput.value);
-		// this.previewChartData.data = this.dataInput.value;
+		this.previewChartData.data = this.dataInput.value;
 
 		if (this.previewChartData.type !== '') {
 			this.drawPreviewChart();
